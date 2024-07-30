@@ -1,0 +1,1 @@
+# go-duplicate-files-finder
