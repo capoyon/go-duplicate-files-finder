@@ -1,6 +1,7 @@
 package main
 
 import (
+    "flag"
 	"fmt"
 	"os"
 	"time"
@@ -11,20 +12,41 @@ import (
 
 
 func main() {
-    start := time.Now()
-    if len(os.Args) < 2 {
-        fmt.Println(`Usage: go run main.go <directory>`)
-        return
+    var path string
+    flag.StringVar(&path, "path", "", "path/directory to scan")
+    flag.Parse()
+
+    if path == "" {
+        fmt.Printf("Error: --path flag is required\n\n")
+        flag.Usage()
+        os.Exit(1)
+    }
+    if !isValidDir(path) {
+        fmt.Printf("%s is not a valid directory.\n", path)
+        os.Exit(1)
     }
 
-    dir := os.Args[1]
-    if fileMap, err := filemgr.HashFilesInDir(dir); err != nil {
+
+    start := time.Now()
+    if fileMap, err := filemgr.HashFilesInDir(path); err != nil {
         fmt.Printf("Error: %v\n", err)
     } else {
         printDuplicateFile(fileMap)
     }
     
     fmt.Printf("Scanning duration: %v\n", time.Since(start))
+}
+
+func isValidDir(path string) bool {
+    info, err := os.Stat(path)
+    if err != nil {
+        return false
+    }
+    if !info.IsDir() {
+        return false
+    }
+
+    return true
 }
 
 func printDuplicateFile(m map[string][]filemgr.FileInfo) {
