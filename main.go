@@ -28,12 +28,19 @@ func main() {
 
 
     start := time.Now()
-    if fileMap, err := filemgr.HashFilesInDir(path); err != nil {
+    fileMap, err := filemgr.GroupBySize(path)
+    if err != nil {
+        fmt.Printf("Error: %v\n", err)
+        return
+    }
+
+    fmt.Print("\n\nHashing...\n")     
+    hashToFileInfo, err := filemgr.GroupByHash(fileMap)
+    if err != nil {
         fmt.Printf("Error: %v\n", err)
     } else {
-        printDuplicateFile(fileMap)
+        printDuplicateFile(*hashToFileInfo)
     }
-    
     fmt.Printf("Scanning duration: %v\n", time.Since(start))
 }
 
@@ -47,6 +54,17 @@ func isValidDir(path string) bool {
     }
 
     return true
+}
+
+func printSizeToPath(paths *[]string) {
+     if paths == nil {
+        fmt.Println("The arr is nil")
+        return
+    }
+    
+    for _, path := range *paths {
+        fmt.Printf("Size: %s bytes\n", path)
+    }
 }
 
 func printDuplicateFile(m map[string][]filemgr.FileInfo) {
